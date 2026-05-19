@@ -1,0 +1,40 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Node + Cordova
+      run: |
+        sudo apt update
+        sudo apt install -y nodejs npm
+        npm install -g cordova
+
+    - name: Create Cordova project
+      run: |
+        cordova create app org.game.snake SnakeGame
+        cd app
+        rm -rf www
+        cp -r ../www www
+        cordova platform add android
+        cordova build android
+
+    - name: Show all APKs (debug)
+      run: |
+        echo "Searching for APK files..."
+        find . -type f -name "*.apk"
+
+    - name: Upload ANY APK automatically
+      uses: actions/upload-artifact@v4
+      with:
+        name: SnakeGame-APK
+        path: "**/*.apk"
+        if-no-files-found: error
